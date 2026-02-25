@@ -1,0 +1,107 @@
+@'
+"""
+Threading Manager - lightweight thread wrappers for the bot
+"""
+import threading
+import time
+from typing import Callable, Optional
+from logger import Logger
+
+class TradeMonitorThread:
+    def __init__(self, logger: Logger):
+        self.logger = logger
+        self.thread: Optional[threading.Thread] = None
+        self.is_running = False
+        self.callback: Optional[Callable] = None
+        self.check_interval = 5
+
+    def set_callback(self, cb: Callable):
+        self.callback = cb
+
+    def start(self):
+        if self.is_running:
+            return
+        self.is_running = True
+        self.thread = threading.Thread(target=self._run, daemon=True)
+        self.thread.start()
+        self.logger.ok("Trade monitor thread started")
+
+    def stop(self):
+        self.is_running = False
+        if self.thread:
+            self.thread.join(timeout=5)
+        self.logger.info("Trade monitor thread stopped")
+
+    def _run(self):
+        try:
+            while self.is_running:
+                if self.callback:
+                    try:
+                        self.callback()
+                    except Exception as e:
+                        self.logger.error(f"Monitor callback error: {e}")
+                time.sleep(self.check_interval)
+        except Exception as e:
+            self.logger.error(f"Monitor thread error: {e}")
+            self.is_running = False
+
+class SignalGeneratorThread:
+    def __init__(self, logger: Logger):
+        self.logger = logger
+        self.thread: Optional[threading.Thread] = None
+        self.is_running = False
+        self.callback: Optional[Callable] = None
+        self.check_interval = 60
+
+    def set_callback(self, cb: Callable):
+        self.callback = cb
+
+    def start(self):
+        if self.is_running:
+            return
+        self.is_running = True
+        self.thread = threading.Thread(target=self._run, daemon=True)
+        self.thread.start()
+        self.logger.ok("Signal generation thread started")
+
+    def stop(self):
+        self.is_running = False
+        if self.thread:
+            self.thread.join(timeout=5)
+        self.logger.info("Signal generation thread stopped")
+
+    def _run(self):
+        try:
+            while self.is_running:
+                if self.callback:
+                    try:
+                        self.callback()
+                    except Exception as e:
+                        self.logger.error(f"Signal callback error: {e}")
+                time.sleep(self.check_interval)
+        except Exception as e:
+            self.logger.error(f"Signal thread error: {e}")
+            self.is_running = False
+
+class ThreadManager:
+    def __init__(self, logger: Logger):
+        self.logger = logger
+        self.monitor = TradeMonitorThread(logger)
+        self.signal = SignalGeneratorThread(logger)
+
+    def set_monitor_callback(self, cb: Callable):
+        self.monitor.set_callback(cb)
+
+    def set_signal_callback(self, cb: Callable):
+        self.signal.set_callback(cb)
+
+    def start_all(self):
+        self.monitor.start()
+        self.signal.start()
+        self.logger.ok("All threads started")
+
+    def stop_all(self):
+        self.monitor.stop()
+        self.signal.stop()
+        self.logger.ok("All threads stopped")
+'@ > .\threading_manager.py

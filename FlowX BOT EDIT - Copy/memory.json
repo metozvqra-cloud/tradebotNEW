@@ -1,0 +1,14 @@
+{
+  "morning_sent": false,
+  "evening_sent": false,
+  "asian_snapshot": {
+    "range": 102.28999999999996,
+    "trend": "BULLISH",
+    "volatility": 7.166428571428631
+  },
+  "last_signal_time": null,
+  "signals_today": 0,
+  "wins_today": 0,
+  "losses_today": 0,
+  "sessions_tracked": []
+}
